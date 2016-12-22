@@ -16,7 +16,15 @@ limitations under the License.
 
 package main
 
-import "testing"
+import (
+	"fmt"
+	"github.com/hyperledger/fabric-cop/cli/server"
+	"github.com/hyperledger/fabric/core/crypto/bccsp/factory"
+	"github.com/hyperledger/fabric/core/crypto/bccsp/sw"
+	"os"
+	"strings"
+	"testing"
+)
 
 func TestClientCommand(t *testing.T) {
 	rtn := COPMain([]string{"cop", "client"})
@@ -43,5 +51,31 @@ func TestBogusCommand(t *testing.T) {
 	rtn := COPMain([]string{"cop", "bogus"})
 	if rtn == 0 {
 		t.Error("TestBogusCommand passed but should have failed")
+	}
+}
+
+// This 'test' is provided as a utility to convert from PEM encoded
+// software keys into BCCSP SKI files when new tests are being added
+// For example:
+//   go test -run TestGenerateSKIsFromPEM -args ../testdata/ec-key.pem ../testdata/test-key.pem
+func TestGenerateSKIsFromPEM(t *testing.T) {
+	t.SkipNow()
+
+	ks := &sw.FileBasedKeyStore{}
+	err := ks.Init(nil, "../testdata/ks", false)
+	if err != nil {
+		t.Fatalf("Failed initializing key store [%s]", err)
+	}
+
+	// For now hardcode the SW BCCSP. This should be made parametrizable via json cfg once there are more BCCSPs
+	bccspOpts := &factory.SwOpts{Ephemeral_: true, SecLevel: 256, HashFamily: "SHA2", KeyStore: ks}
+	csp, err := factory.GetBCCSP(bccspOpts)
+	if err != nil {
+		t.Fatalf("Failed getting BCCSP [%s]", err)
+	}
+
+	for _, name := range os.Args[2:] {
+		fmt.Printf("Parm to test is %s\n", name)
+		server.PEMKeyToSKI(csp, name, strings.Replace(name, ".pem", ".ski", 1))
 	}
 }

@@ -31,8 +31,7 @@ import (
 
 func TestInitCA(t *testing.T) {
 
-	s := new(Server)
-	COPHome, err := s.CreateHome()
+	COPHome, err := CreateHome()
 	if err != nil {
 		log.Fatalf("Failed to get $COP_HOME directory.")
 	}

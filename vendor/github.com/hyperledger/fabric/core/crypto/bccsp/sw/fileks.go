@@ -216,6 +216,7 @@ func (ks *FileBasedKeyStore) StoreKey(k bccsp.Key) (err error) {
 
 func (ks *FileBasedKeyStore) getSuffix(alias string) string {
 	files, _ := ioutil.ReadDir(ks.path)
+	logger.Errorf("Searching %s for %s", ks.path, alias)
 	for _, f := range files {
 		if strings.HasPrefix(f.Name(), alias) {
 			if strings.HasSuffix(f.Name(), "sk") {

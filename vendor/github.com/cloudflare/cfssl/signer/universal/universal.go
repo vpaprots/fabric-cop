@@ -50,6 +50,10 @@ var localSignerList = []localSignerCheck{
 	fileBackedSigner,
 }
 
+func AddLocalSignerToList(signer localSignerCheck) {
+	localSignerList = append([]localSignerCheck{signer}, localSignerList...)
+}
+
 func newLocalSigner(root Root, policy *config.Signing) (s signer.Signer, err error) {
 	// shouldProvide indicates whether the
 	// function *should* have produced a key. If

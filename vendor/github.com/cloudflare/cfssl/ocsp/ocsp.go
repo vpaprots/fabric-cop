@@ -99,6 +99,24 @@ func ReasonStringToCode(reason string) (reasonCode int, err error) {
 // NewSignerFromFile reads the issuer cert, the responder cert and the responder key
 // from PEM files, and takes an interval in seconds
 func NewSignerFromFile(issuerFile, responderFile, keyFile string, interval time.Duration) (Signer, error) {
+	log.Debug("Loading responder key: ", keyFile)
+	keyBytes, err := ioutil.ReadFile(keyFile)
+	if err != nil {
+		return nil, cferr.Wrap(cferr.CertificateError, cferr.ReadFailed, err)
+	}
+
+	key, err := helpers.ParsePrivateKeyPEM(keyBytes)
+	if err != nil {
+		log.Debug("Malformed private key %v", err)
+		return nil, err
+	}
+
+	return NewSignerFromFileAndKey(issuerFile, responderFile, key, interval)
+}
+
+// NewSignerFromFile reads the issuer cert, the responder cert and the responder key
+// from PEM files, and takes an interval in seconds
+func NewSignerFromFileAndKey(issuerFile, responderFile string, key crypto.Signer, interval time.Duration) (Signer, error) {
 	log.Debug("Loading issuer cert: ", issuerFile)
 	issuerBytes, err := ioutil.ReadFile(issuerFile)
 	if err != nil {
@@ -109,11 +127,6 @@ func NewSignerFromFile(issuerFile, responderFile, keyFile string, interval time.
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("Loading responder key: ", keyFile)
-	keyBytes, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		return nil, cferr.Wrap(cferr.CertificateError, cferr.ReadFailed, err)
-	}
 
 	issuerCert, err := helpers.ParseCertificatePEM(issuerBytes)
 	if err != nil {
@@ -122,12 +135,6 @@ func NewSignerFromFile(issuerFile, responderFile, keyFile string, interval time.
 
 	responderCert, err := helpers.ParseCertificatePEM(responderBytes)
 	if err != nil {
-		return nil, err
-	}
-
-	key, err := helpers.ParsePrivateKeyPEM(keyBytes)
-	if err != nil {
-		log.Debug("Malformed private key %v", err)
 		return nil, err
 	}
 

@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -36,11 +38,17 @@ const (
 	homeDir    = "/tmp/home"
 	dataSource = "/tmp/home/server.db"
 	CERT       = "../../testdata/ec.pem"
-	KEY        = "../../testdata/ec-key.pem"
+	KEY        = "../../testdata/ec-key.ski"
 	CONFIG     = "../../testdata/testconfig.json"
 	DBCONFIG   = "../../testdata/cop-db.json"
 	CSR        = "../../testdata/csr.csr"
+	KEYSTORE   = "../../testdata/ks"
 )
+
+func TestMain(m *testing.M) {
+	startServer()
+	os.Exit(m.Run())
+}
 
 var serverStarted bool
 var serverExitCode = 0
@@ -53,6 +61,14 @@ func createServer() *Server {
 
 func startServer() int {
 	os.RemoveAll(homeDir)
+
+	os.MkdirAll(filepath.Join(filepath.Join(homeDir, "ks"), "ks"), 0755)
+	cpCmd := exec.Command("/bin/cp", "-Rf", KEYSTORE, homeDir)
+	err := cpCmd.Run()
+	if err != nil {
+		panic(fmt.Errorf("Failed copying keystore [%s]", err.Error()))
+	}
+
 	if !serverStarted {
 		serverStarted = true
 		fmt.Println("starting COP server ...")
@@ -80,8 +96,6 @@ func TestPostgresFail(t *testing.T) {
 }
 
 func TestRegisterUser(t *testing.T) {
-	startServer()
-
 	copServer := `{"serverURL":"http://localhost:8888"}`
 	c, _ := lib.NewClient(copServer)
 
@@ -272,12 +286,12 @@ func TestMaxEnrollment(t *testing.T) {
 }
 
 func TestCreateHome(t *testing.T) {
-	s := createServer()
+	createServer()
 	t.Log("Test Creating Home Directory")
 	os.Unsetenv("COP_HOME")
 	os.Setenv("HOME", "/tmp/test")
 
-	_, err := s.CreateHome()
+	_, err := CreateHome()
 	if err != nil {
 		t.Errorf("Failed to create home directory, error: %s", err)
 	}
