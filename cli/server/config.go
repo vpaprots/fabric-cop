@@ -150,6 +150,10 @@ func configInit(cfg *cli.Config) {
 	if err != nil {
 		panic(fmt.Errorf("Failed getting BCCSP [%s]", err.Error()))
 	}
+	if csp == nil {
+		panic(fmt.Errorf("CSP is NIL"))
+	}
+
 	CFG.csp = csp
 
 	dbg := os.Getenv("COP_DEBUG")

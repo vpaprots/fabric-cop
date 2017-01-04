@@ -22,6 +22,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -32,13 +34,14 @@ import (
 
 const (
 	CERT     string = "../testdata/ec.pem"
-	KEY      string = "../testdata/ec-key.pem"
+	KEY      string = "../testdata/ec-key.ski"
 	CFG      string = "../testdata/cop.json"
 	CSR      string = "../testdata/csr.json"
 	REG      string = "../testdata/registerrequest.json"
 	CONFIG   string = "../../testdata/cop.json"
 	DBCONFIG string = "../testdata/enrolltest.json"
 	HOME     string = "/tmp/client"
+	KEYSTORE string = "../testdata/ks"
 )
 
 var serverStarted bool
@@ -53,6 +56,13 @@ func prepTest() {
 	} else {
 		os.RemoveAll(HOME)
 		os.MkdirAll(HOME, 0755)
+	}
+
+	os.MkdirAll(filepath.Join(HOME, "ks"), 0755)
+	cpCmd := exec.Command("/bin/cp", "-Rf", KEYSTORE, HOME)
+	err = cpCmd.Run()
+	if err != nil {
+		panic(fmt.Errorf("Failed copying keystore [%s]", err.Error()))
 	}
 }
 

@@ -60,14 +60,18 @@ func PEMKeyToSKI(csp bccsp.BCCSP, path, skiPath string) error {
 }
 
 func getSignerFromSKI(ski []byte) (crypto.Signer, error) {
+	if CFG.csp == nil {
+		panic("CFG.csp was not initialized")
+	}
+
 	privateKey, err := CFG.csp.GetKey(ski)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to load ski from bccsp %s", err.Error())
 	}
 
 	signer := &bccspsigner.CryptoSigner{}
 	if err = signer.Init(CFG.csp, privateKey); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to load ski from bccsp %s", err.Error())
 	}
 	return signer, nil
 }
@@ -75,7 +79,7 @@ func getSignerFromSKI(ski []byte) (crypto.Signer, error) {
 func getSignerFromSKIFile(skiFile string) (crypto.Signer, error) {
 	keyBuff, err := ioutil.ReadFile(skiFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not read skiFile [%s]: %s", skiFile, err.Error())
 	}
 
 	block, _ := pem.Decode(keyBuff)
@@ -103,7 +107,7 @@ func bccspBackedSigner(root *universal.Root, policy *config.Signing) (signer.Sig
 		return nil, false, nil
 	}
 
-	log.Debug("Loading CA for SKI: ", caFile)
+	log.Debugf("Loading CA [%s] for SKI [%s] ", caFile, skiFile)
 	ca, err := ioutil.ReadFile(caFile)
 	if err != nil {
 		return nil, false, err

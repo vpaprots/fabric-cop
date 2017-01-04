@@ -45,10 +45,6 @@ const (
 	KEYSTORE   = "../../testdata/ks"
 )
 
-func TestMain(m *testing.M) {
-	startServer()
-	os.Exit(m.Run())
-}
 
 var serverStarted bool
 var serverExitCode = 0
@@ -96,6 +92,7 @@ func TestPostgresFail(t *testing.T) {
 }
 
 func TestRegisterUser(t *testing.T) {
+	startServer()
 	copServer := `{"serverURL":"http://localhost:8888"}`
 	c, _ := lib.NewClient(copServer)
 
@@ -106,7 +103,7 @@ func TestRegisterUser(t *testing.T) {
 
 	ID, err := c.Enroll(enrollReq)
 	if err != nil {
-		t.Error("enroll of user 'admin' with password 'adminpw' failed")
+		t.Errorf("enroll of user 'admin' with password 'adminpw' failed [%s]", err.Error())
 		return
 	}
 

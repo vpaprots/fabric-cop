@@ -39,7 +39,6 @@ import (
 	"github.com/cloudflare/cfssl/api/signhandler"
 	"github.com/cloudflare/cfssl/bundler"
 	"github.com/cloudflare/cfssl/cli"
-	"github.com/cloudflare/cfssl/cli/ocspsign"
 	"github.com/cloudflare/cfssl/config"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/cloudflare/cfssl/ocsp"
@@ -182,7 +181,7 @@ func serverMain(args []string, c cli.Config) error {
 
 	log.Info("Initializing signer")
 
-	if ocspSigner, err = ocspsign.SignerFromConfig(c); err != nil {
+	if ocspSigner, err = ocspSignerFromConfig(c); err != nil {
 		log.Warningf("couldn't initialize ocsp signer: %v", err)
 	}
 
