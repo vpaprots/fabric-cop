@@ -32,32 +32,10 @@ import (
 	"github.com/cloudflare/cfssl/signer"
 	"github.com/cloudflare/cfssl/signer/local"
 	"github.com/cloudflare/cfssl/signer/universal"
-	"github.com/hyperledger/fabric/core/crypto/bccsp"
 	bccspsigner "github.com/hyperledger/fabric/core/crypto/bccsp/signer"
 )
 
 var pemType = "BCCSP SKI"
-
-// PEMKeyToSKI imports PEM key into BCCSP key store and stores out to a file
-func PEMKeyToSKI(csp bccsp.BCCSP, path, skiPath string) error {
-	keyBuff, err := ioutil.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("Cannot get Private Key [%s]", err.Error())
-	}
-	block, _ := pem.Decode(keyBuff)
-
-	k, err := csp.KeyImport(block.Bytes, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: false})
-	if err != nil {
-		return fmt.Errorf("CA Private Key Object cannot be generated [%s]", err.Error())
-	}
-
-	skiEncoded := pem.EncodeToMemory(&pem.Block{Type: pemType, Bytes: k.SKI()})
-	err = ioutil.WriteFile(skiPath, skiEncoded, 0644)
-	if err != nil {
-		return fmt.Errorf("Cannot write Private Key SKI [%s]", err.Error())
-	}
-	return nil
-}
 
 func getSignerFromSKI(ski []byte) (crypto.Signer, error) {
 	if CFG.csp == nil {

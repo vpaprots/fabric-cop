@@ -442,7 +442,7 @@ func Start(dir string) {
 	cert := filepath.Join(dir, "ec.pem")
 	key := filepath.Join(dir, "ec-key.ski")
 	config := filepath.Join(dir, "testconfig.json")
-	os.Args = []string{"server", "start", "-ca", cert, "-ca-key", key, "-config", config}
+	os.Args = []string{"server", "start", "-ca", cert, "-ca-key", key, "-config", config, "-responder", cert, "-responder-key", key}
 	Command()
 	os.Args = osArgs
 }
